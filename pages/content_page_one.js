@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, {useState} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput} from 'react-native';
 
-export default function App() {
+export default function ContentPageOne() {
     // 모달 상태 변수
     const [namemodalupVisible, setnamemodalupVisible] = useState(false);
     const [datemodalupVisible, setDateModalupVisible] = useState(false);
@@ -62,6 +62,7 @@ export default function App() {
         setCheckModalupVisible(false);
     };
 
+    
 
     return (
     <View style={styles.container}>

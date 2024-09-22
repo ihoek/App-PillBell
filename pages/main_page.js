@@ -1,22 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
-export default function App() {
+export default function MainPage({navigation,route}) {
   return (
     <View style={styles.container}>
       <View style={styles.top_container}></View>
       <View style={styles.body_container}>
         <View style={styles.choicelabel}>
-          <TouchableOpacity style={styles.photo_button}><Text>photo</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageOne') }}><Text>photo</Text></TouchableOpacity>
           <Text style={styles.choicetext}>이름</Text>
         </View>
         <View style={styles.choicelabel}>
-          <TouchableOpacity style={styles.photo_button}><Text>photo</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageTwo') }}><Text>photo</Text></TouchableOpacity>
           <Text style={styles.choicetext}>이름</Text>
         </View>
         <View style={styles.choicelabel}>
-          <TouchableOpacity style={styles.photo_button}><Text>photo</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageThree') }}><Text>photo</Text></TouchableOpacity>
           <Text style={styles.choicetext}>이름</Text>
         </View>
       </View>
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   },
   body_container: {
     flex:7,
-    backgroundColor:"green",
+    //backgroundColor:"green",
     alignItems: 'center',
     justifyContent: 'center',
   },
