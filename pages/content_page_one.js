@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput, Button} from 'react-native';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 export default function ContentPageOne() {
     // 모달 상태 변수
@@ -8,7 +9,7 @@ export default function ContentPageOne() {
     const [datemodalupVisible, setDateModalupVisible] = useState(false);
     const [premodalupVisible, setPreModalupVisible] = useState(false);
     const [checkmodalupVisible,setCheckModalupVisible] = useState(false);
-
+    const [cameramodalupVisible,setCameraModalupVisible] = useState(false);
 
     // textfield
     const [Nametext, onChangeNameText] = React.useState(''); 
@@ -20,6 +21,29 @@ export default function ContentPageOne() {
     const [DatebuttonText, setDateButtonText] = React.useState("내용");
     const [PrebuttonText, setPreButtonText] = React.useState("내용");
     const [CheckbuttonText, setCheckButtonText] = React.useState("내용");
+
+    //camera
+    const [facing, setFacing] = useState(CameraType);
+    const [permission, requestPermission] = useCameraPermissions();
+
+    if (!permission) {
+      // Camera permissions are still loading.
+      return <View />;
+    }
+
+    if (!permission.granted) {
+      // Camera permissions are not granted yet.
+      return (
+        <View style={styles.container}>
+          <Text style={styles.message}>We need your permission to show the camera</Text>
+          <Button onPress={requestPermission} title="grant permission" />
+        </View>
+      );
+    }
+
+    function toggleCameraFacing() {
+      setFacing(current => (current === 'back' ? 'front' : 'back'));
+    }
 
 
     // 이름 모달 열기
@@ -46,7 +70,12 @@ export default function ContentPageOne() {
         setCheckModalupVisible(true);
     };
 
-
+    
+    //카메라 모달 열기
+    const cameramodal = () => {
+      console.log('cameramodal');
+      setCameraModalupVisible(true);
+  };
     // 모달 닫기 및 버튼 텍스트 업데이트
     const closemodal = () => {
         console.log('close modal');
@@ -60,6 +89,7 @@ export default function ContentPageOne() {
         setDateModalupVisible(false);
         setPreModalupVisible(false);
         setCheckModalupVisible(false);
+        setCameraModalupVisible(false);
     };
 
     
@@ -82,7 +112,7 @@ export default function ContentPageOne() {
             <TouchableOpacity style={styles.category_name} onPress={closemodal}><Text>확인</Text></TouchableOpacity>
           </View>
         </View>
-      </Modal>
+        </Modal>
 
         {/* 소비기한 모달 */}
         <Modal
@@ -135,8 +165,29 @@ export default function ContentPageOne() {
             </View>
         </Modal>
 
+        {/* 카메라 모달 */}
+        <Modal
+        animationType="slide"
+        transparent={true}
+        visible={cameramodalupVisible}
+        onRequestClose={() => {
+          setCameraModalupVisible(!cameramodalupVisible);
+        }}>
+        <View style={styles.centeredView}>
+          <View style={styles.CameraModalView}>
+            <CameraView style={styles.camera} facing={facing}></CameraView>
+            <View style={styles.CameraModalView_Bottom}>
+              <TouchableOpacity style={styles.Cameramodelbutton}><Text>갤러리</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.Cameramodelbutton} onPress={toggleCameraFacing}><Text>전환</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.Cameramodelbutton}><Text>확인</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.Cameramodelbutton} onPress={closemodal}><Text>닫기</Text></TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.top_container}>
-        <TouchableOpacity style={styles.photo_button}><Text>photo</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.photo_button} onPress={cameramodal}><Text>photo</Text></TouchableOpacity>
       </View>
       
       <View style={styles.body_container}>
@@ -235,8 +286,6 @@ const styles = StyleSheet.create({
     borderRadius:10,
     margin:10,
   },
-
-
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -267,5 +316,51 @@ const styles = StyleSheet.create({
     padding: 10,
     width : 100,
     alignItems: 'center'
+  },
+  CameraModalView_Top : {
+    flex : 4
+  },
+  CameraModalView_Bottom  :{
+    flex : 1,
+    flexDirection:"row",
+  },
+  CameraModalView : {
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    borderColor:'#000',
+    borderWidth:1,
+    borderRadius:10,
+    width :'80%',
+    height : '60%'
+  },
+  Cameramodelbutton : {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "white",
+    width : 60,
+    height : 50,
+    borderColor:'#000',
+    borderWidth:1,
+    borderRadius:10,
+    margin:10,
+  },
+  Camerascrenn : {
+    
+  },
+  camera: {
+    flex: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "white",
+    width : 320,
+    height : 320,
+    borderColor:'#000',
+    borderWidth:1,
+    borderRadius:10,
+    margin:10,
   },
 });
