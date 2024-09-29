@@ -1,23 +1,37 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
 
 export default function MainPage({navigation,route}) {
+  const { photoUri, name, data} = route.params || {};
+
+
   return (
     <View style={styles.container}>
       <View style={styles.top_container}></View>
       <View style={styles.body_container}>
         <View style={styles.choicelabel}>
-          <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageOne') }}><Text>photo</Text></TouchableOpacity>
-          <Text style={styles.choicetext}>이름</Text>
+          <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageOne') }}>
+            {photoUri ? (<Image source={{ uri: photoUri }} style={styles.photoImage} />) : (<Text>photo</Text>)}
+          </TouchableOpacity>
+          <View  style={styles.choicecontent}>
+            <View style={styles.choicetext}><Text>{name || "이름"}</Text></View>
+            <View style={styles.choicetext}><Text>{data || "소비기한"}</Text></View>
+          </View>
         </View>
         <View style={styles.choicelabel}>
           <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageTwo') }}><Text>photo</Text></TouchableOpacity>
-          <Text style={styles.choicetext}>이름</Text>
+          <View  style={styles.choicecontent}>
+            <View style={styles.choicetext}><Text>이름</Text></View>
+            <View style={styles.choicetext}><Text>소비기한</Text></View>
+          </View>
         </View>
         <View style={styles.choicelabel}>
           <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageThree') }}><Text>photo</Text></TouchableOpacity>
-          <Text style={styles.choicetext}>이름</Text>
+          <View  style={styles.choicecontent}>
+            <View style={styles.choicetext}><Text>이름</Text></View>
+            <View style={styles.choicetext}><Text>소비기한</Text></View>
+          </View>
         </View>
       </View>
 
@@ -62,17 +76,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: "white",
     padding: 10,
-    width : 100,
-    height : 100,
+    width : 120,
+    height : 120,
     borderColor:'#000',
     borderWidth:1,
     borderRadius:10,
     margin:10,
   },
   choicetext : {
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor : "white",
     width : 200,
-    height : 100,
+    height : 50,
     borderColor:'#000',
     borderWidth:1,
     borderRadius:10,
@@ -94,5 +110,13 @@ const styles = StyleSheet.create({
     borderRadius:10,
     margin:10,alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
+  choicecontent : {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoImage  : {
+    width: '100%',
+    height: '100%',
+  },
 });

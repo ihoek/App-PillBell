@@ -1,15 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput, Button} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput, Button, Image} from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
-export default function ContentPageOne() {
+export default function ContentPageOne({navigation}) {
     // 모달 상태 변수
     const [namemodalupVisible, setnamemodalupVisible] = useState(false);
     const [datemodalupVisible, setDateModalupVisible] = useState(false);
     const [premodalupVisible, setPreModalupVisible] = useState(false);
     const [checkmodalupVisible,setCheckModalupVisible] = useState(false);
     const [cameramodalupVisible,setCameraModalupVisible] = useState(false);
+
+    const [cameraRef, setCameraRef] = useState(null);
 
     // textfield
     const [Nametext, onChangeNameText] = React.useState(''); 
@@ -26,6 +28,11 @@ export default function ContentPageOne() {
     const [facing, setFacing] = useState(CameraType);
     const [permission, requestPermission] = useCameraPermissions();
 
+
+    // 사진 저장을 위한 상태 변수
+    const [photoUri, setPhotoUri] = useState(null);
+
+    //카메라 권한
     if (!permission) {
       // Camera permissions are still loading.
       return <View />;
@@ -45,6 +52,24 @@ export default function ContentPageOne() {
       setFacing(current => (current === 'back' ? 'front' : 'back'));
     }
 
+
+    //카메라 확인 버튼
+    const takepicture = async() => {
+      if (cameraRef) {
+            try {
+                console.log('takepicture 실행중');
+                const photo = await cameraRef.takePictureAsync();
+                setPhotoUri(photo.uri); // 찍은 사진의 URI 저장
+
+                setCameraModalupVisible(false);
+            } catch (error) {
+                console.error('사진 찍기 중 오류 발생:', error);
+            }
+        } else {
+            console.error('Camera reference is null.');
+        }
+
+    }
 
     // 이름 모달 열기
     const namemodalup = () => {
@@ -70,12 +95,11 @@ export default function ContentPageOne() {
         setCheckModalupVisible(true);
     };
 
-    
     //카메라 모달 열기
     const cameramodal = () => {
       console.log('cameramodal');
       setCameraModalupVisible(true);
-  };
+    };
     // 모달 닫기 및 버튼 텍스트 업데이트
     const closemodal = () => {
         console.log('close modal');
@@ -96,7 +120,6 @@ export default function ContentPageOne() {
 
     return (
     <View style={styles.container}>
-
         {/* 이름 모달 */}
         <Modal
         animationType="slide"
@@ -175,19 +198,25 @@ export default function ContentPageOne() {
         }}>
         <View style={styles.centeredView}>
           <View style={styles.CameraModalView}>
-            <CameraView style={styles.camera} facing={facing}></CameraView>
+            <CameraView style={styles.camera} facing={facing} ref={(ref) => setCameraRef(ref)}></CameraView>
             <View style={styles.CameraModalView_Bottom}>
               <TouchableOpacity style={styles.Cameramodelbutton}><Text>갤러리</Text></TouchableOpacity>
               <TouchableOpacity style={styles.Cameramodelbutton} onPress={toggleCameraFacing}><Text>전환</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.Cameramodelbutton}><Text>확인</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.Cameramodelbutton} onPress={takepicture}><Text>확인</Text></TouchableOpacity>
               <TouchableOpacity style={styles.Cameramodelbutton} onPress={closemodal}><Text>닫기</Text></TouchableOpacity>
             </View>
           </View>
         </View>
-      </Modal>
+        </Modal>
 
       <View style={styles.top_container}>
-        <TouchableOpacity style={styles.photo_button} onPress={cameramodal}><Text>photo</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.photo_button} onPress={cameramodal}>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.photoImage} /> // 찍은 사진 표시
+          ) : (
+            <Text>photo</Text>
+          )}
+        </TouchableOpacity>
       </View>
       
       <View style={styles.body_container}>
@@ -209,7 +238,11 @@ export default function ContentPageOne() {
         </View>
       </View>
       <View style={styles.footer_container}>
-        <TouchableOpacity style={styles.check_button}><Text>확인</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.check_button} onPress={() => { navigation.navigate('MainPage',{
+          photoUri : photoUri,
+          name : Nametext,
+          data : Datetext
+          }) }}><Text>확인</Text></TouchableOpacity>
       </View>
     </View>
   );
@@ -220,17 +253,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   top_container: {
-    flex:4,
+    flex:1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   body_container: {
-    flex:5,
+    flex:1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   footer_container : {
-    flex:1,
+    flex:0.2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -238,9 +271,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: "white",
-    padding: 10,
-    width : '90%',
-    height : '90%',
+    padding: 5,
+    width : 320,
+    height : 320,
     borderColor:'#000',
     borderWidth:1,
     borderRadius:10,
@@ -362,5 +395,9 @@ const styles = StyleSheet.create({
     borderWidth:1,
     borderRadius:10,
     margin:10,
+  },
+  photoImage: {
+    width: '100%',
+    height: '100%',
   },
 });
