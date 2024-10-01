@@ -1,7 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import React, {useState} from 'react';
+import React, {useState, useEffect, useContext  } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput, Button, Image} from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { ImageContext } from './ImageContext'; // 이미지 관리 컨텍스트
+import { ProductContext } from './ProductContext'; // 제품 정보 관리 컨텍스트
 
 export default function ContentPageOne({navigation}) {
     // 모달 상태 변수
@@ -13,16 +15,20 @@ export default function ContentPageOne({navigation}) {
 
     const [cameraRef, setCameraRef] = useState(null);
 
-    // textfield
-    const [Nametext, onChangeNameText] = React.useState(''); 
-    const [Datetext, onChangeDateText] = React.useState(''); 
-    const [Pretext, onChangePreText] = React.useState(''); 
-    const [Checktext, onChangeCheckText] = React.useState(''); 
+    // 전역 상태 관리 (ProductContext 사용)
+    const { productInfo, setProductInfo } = useContext(ProductContext);
+    const { name, expirationDate, warning, consumed } = productInfo;
 
-    const [NamebuttonText, setNameButtonText] = React.useState("내용");
-    const [DatebuttonText, setDateButtonText] = React.useState("내용");
-    const [PrebuttonText, setPreButtonText] = React.useState("내용");
-    const [CheckbuttonText, setCheckButtonText] = React.useState("내용");
+    // textfield
+    const [Nametext, onChangeNameText] = useState(name);
+    const [Datetext, onChangeDateText] = useState(expirationDate);
+    const [Pretext, onChangePreText] = useState(warning);
+    const [Checktext, onChangeCheckText] = useState(consumed);
+
+    const [NamebuttonText, setNameButtonText] = useState(name || "내용");
+    const [DatebuttonText, setDateButtonText] = useState(expirationDate || "내용");
+    const [PrebuttonText, setPreButtonText] = useState(warning || "내용");
+    const [CheckbuttonText, setCheckButtonText] = useState(consumed || "내용");
 
     //camera
     const [facing, setFacing] = useState(CameraType);
@@ -30,7 +36,12 @@ export default function ContentPageOne({navigation}) {
 
 
     // 사진 저장을 위한 상태 변수
-    const [photoUri, setPhotoUri] = useState(null);
+    const { photoUri, setPhotoUri } = useContext(ImageContext);
+
+    useEffect(() => {
+      setProductInfo({ name: Nametext, expirationDate: Datetext, warning: Pretext, consumed: Checktext });
+    }, [Nametext, Datetext, Pretext, Checktext, setProductInfo]);
+  
 
     //카메라 권한
     if (!permission) {
@@ -116,6 +127,19 @@ export default function ContentPageOne({navigation}) {
         setCameraModalupVisible(false);
     };
 
+    //확인 버튼 
+    const Bodycheck = () => {
+      //console.log
+      console.log("name:" + Nametext);
+      console.log("Date:" + Datetext);
+      console.log("Pre:" + Pretext);
+      console.log("Check:" + Checktext);
+        navigation.navigate('MainPage', {
+            photoUri: photoUri,
+            name: Nametext,
+            data: Datetext,
+        });
+    };
     
 
     return (
@@ -212,7 +236,8 @@ export default function ContentPageOne({navigation}) {
       <View style={styles.top_container}>
       <TouchableOpacity style={styles.photo_button} onPress={cameramodal}>
           {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.photoImage} /> // 찍은 사진 표시
+            // 찍은 사진 표시
+            <Image source={{ uri: photoUri }} style={styles.photoImage} /> 
           ) : (
             <Text>photo</Text>
           )}
@@ -238,11 +263,11 @@ export default function ContentPageOne({navigation}) {
         </View>
       </View>
       <View style={styles.footer_container}>
-        <TouchableOpacity style={styles.check_button} onPress={() => { navigation.navigate('MainPage',{
+        <TouchableOpacity style={styles.check_button} onPress={Bodycheck}/*onPress={() => { navigation.navigate('MainPage',{
           photoUri : photoUri,
           name : Nametext,
           data : Datetext
-          }) }}><Text>확인</Text></TouchableOpacity>
+          }) }}*/><Text>확인</Text></TouchableOpacity>
       </View>
     </View>
   );
