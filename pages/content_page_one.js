@@ -39,10 +39,6 @@ export default function ContentPageOne({navigation}) {
 
     // 사진 저장을 위한 상태 변수
     const { photoUri, setPhotoUri } = useContext(ImageContext);
-
-    //갤러리 
-    const [image, setImage] = useState(null);
-
     
 
     useEffect(() => {
@@ -164,6 +160,7 @@ export default function ContentPageOne({navigation}) {
             photoUri: photoUri,
             name: Nametext,
             data: Datetext,
+            check : Checktext
         });
     };
     
@@ -446,9 +443,5 @@ const styles = StyleSheet.create({
   photoImage: {
     width: '100%',
     height: '100%',
-  },
-  image: {
-    width: 200,
-    height: 200,
   },
 });

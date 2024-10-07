@@ -1,15 +1,12 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
 
 export default function MainPage({navigation,route}) {
-  const { photoUri, name, data} = route.params || {};
+  const { photoUri, name, data, check} = route.params || {};
 
 
   return (
     <View style={styles.container}>
-      <View style={styles.top_container}></View>
-      <View style={styles.body_container}>
         <View style={styles.choicelabel}>
           <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageOne') }}>
             {photoUri ? (<Image source={{ uri: photoUri }} style={styles.photoImage} />) : (<Text>photo</Text>)}
@@ -17,6 +14,7 @@ export default function MainPage({navigation,route}) {
           <View  style={styles.choicecontent}>
             <View style={styles.choicetext}><Text>{name || "이름"}</Text></View>
             <View style={styles.choicetext}><Text>{data || "소비기한"}</Text></View>
+            <View style={styles.choicetext}><Text>{check || "섭취여부"}</Text></View>
           </View>
         </View>
         <View style={styles.choicelabel}>
@@ -24,6 +22,7 @@ export default function MainPage({navigation,route}) {
           <View  style={styles.choicecontent}>
             <View style={styles.choicetext}><Text>이름</Text></View>
             <View style={styles.choicetext}><Text>소비기한</Text></View>
+            <View style={styles.choicetext}><Text>섭취여부</Text></View>
           </View>
         </View>
         <View style={styles.choicelabel}>
@@ -31,18 +30,9 @@ export default function MainPage({navigation,route}) {
           <View  style={styles.choicecontent}>
             <View style={styles.choicetext}><Text>이름</Text></View>
             <View style={styles.choicetext}><Text>소비기한</Text></View>
+            <View style={styles.choicetext}><Text>섭취여부</Text></View>
           </View>
         </View>
-      </View>
-
-
-      <View style={styles.footer_container}>
-        <View style={styles.footer_containerlabel}>
-        <TouchableOpacity style={styles.footer_button}><Text>추가</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.footer_button}><Text>삭제</Text></TouchableOpacity>
-        </View>
-
-      </View>
     </View>
   );
 }
@@ -50,21 +40,8 @@ export default function MainPage({navigation,route}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //backgroundColor: '#fff',
-  },
-  top_container: {
-    flex:1,
-    //backgroundColor:"yellow"
-  },
-  body_container: {
-    flex:7,
-    //backgroundColor:"green",
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  footer_container : {
-    flex:2,
-    //backgroundColor:"blue"
   },
   choicelabel : {
     flexDirection:"row",
@@ -74,10 +51,11 @@ const styles = StyleSheet.create({
   },
   photo_button : {
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: "white",
-    padding: 10,
-    width : 120,
-    height : 120,
+    padding: 5,
+    width : 160,
+    height : 160,
     borderColor:'#000',
     borderWidth:1,
     borderRadius:10,
@@ -88,11 +66,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor : "white",
     width : 200,
-    height : 50,
+    height : 45,
     borderColor:'#000',
     borderWidth:1,
     borderRadius:10,
-    margin:10,
+    margin:5,
   },
   footer_containerlabel : {
     flexDirection:"row",
