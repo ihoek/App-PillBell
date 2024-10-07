@@ -1,17 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
 
 export default function MainPage({navigation,route}) {
+  const { photoUri, name, data} = route.params || {};
+
+
   return (
     <View style={styles.container}>
       <View style={styles.top_container}></View>
       <View style={styles.body_container}>
         <View style={styles.choicelabel}>
-          <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageOne') }}><Text>photo</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.photo_button} onPress={() => { navigation.navigate('ContentPageOne') }}>
+            {photoUri ? (<Image source={{ uri: photoUri }} style={styles.photoImage} />) : (<Text>photo</Text>)}
+          </TouchableOpacity>
           <View  style={styles.choicecontent}>
-            <View style={styles.choicetext}><Text>이름</Text></View>
-            <View style={styles.choicetext}><Text>소비기한</Text></View>
+            <View style={styles.choicetext}><Text>{name || "이름"}</Text></View>
+            <View style={styles.choicetext}><Text>{data || "소비기한"}</Text></View>
           </View>
         </View>
         <View style={styles.choicelabel}>
@@ -109,5 +114,9 @@ const styles = StyleSheet.create({
   choicecontent : {
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
+  photoImage  : {
+    width: '100%',
+    height: '100%',
+  },
 });

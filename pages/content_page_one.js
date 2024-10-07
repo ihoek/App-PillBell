@@ -1,7 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import React, {useState} from 'react';
+import React, {useState, useEffect, useContext  } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput, Button, Image} from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { ImageContext } from './ImageContext'; // 이미지 관리 컨텍스트
+import { ProductContext } from './ProductContext'; // 제품 정보 관리 컨텍스트
+import * as ImagePicker from 'expo-image-picker';// 갤러리 사진 선택 
+
 
 export default function ContentPageOne({navigation}) {
     // 모달 상태 변수
@@ -13,23 +17,38 @@ export default function ContentPageOne({navigation}) {
 
     const [cameraRef, setCameraRef] = useState(null);
 
-    // textfield
-    const [Nametext, onChangeNameText] = React.useState(''); 
-    const [Datetext, onChangeDateText] = React.useState(''); 
-    const [Pretext, onChangePreText] = React.useState(''); 
-    const [Checktext, onChangeCheckText] = React.useState(''); 
+    // 전역 상태 관리 (ProductContext 사용)
+    const { productInfo, setProductInfo } = useContext(ProductContext);
+    const { name, expirationDate, warning, consumed } = productInfo;
 
-    const [NamebuttonText, setNameButtonText] = React.useState("내용");
-    const [DatebuttonText, setDateButtonText] = React.useState("내용");
-    const [PrebuttonText, setPreButtonText] = React.useState("내용");
-    const [CheckbuttonText, setCheckButtonText] = React.useState("내용");
+    // textfield
+    const [Nametext, onChangeNameText] = useState(name);
+    const [Datetext, onChangeDateText] = useState(expirationDate);
+    const [Pretext, onChangePreText] = useState(warning);
+    const [Checktext, onChangeCheckText] = useState(consumed);
+
+    const [NamebuttonText, setNameButtonText] = useState(name || "내용");
+    const [DatebuttonText, setDateButtonText] = useState(expirationDate || "내용");
+    const [PrebuttonText, setPreButtonText] = useState(warning || "내용");
+    const [CheckbuttonText, setCheckButtonText] = useState(consumed || "내용");
 
     //camera
     const [facing, setFacing] = useState(CameraType);
     const [permission, requestPermission] = useCameraPermissions();
 
+
     // 사진 저장을 위한 상태 변수
-    const [photoUri, setPhotoUri] = useState(null);
+    const { photoUri, setPhotoUri } = useContext(ImageContext);
+
+    //갤러리 
+    const [image, setImage] = useState(null);
+
+    
+
+    useEffect(() => {
+      setProductInfo({ name: Nametext, expirationDate: Datetext, warning: Pretext, consumed: Checktext });
+    }, [Nametext, Datetext, Pretext, Checktext, setProductInfo]);
+  
 
     //카메라 권한
     if (!permission) {
@@ -69,6 +88,25 @@ export default function ContentPageOne({navigation}) {
         }
 
     }
+    //갤러리
+    const gallery = async () => {
+      console.log('갤러리 버튼 실행');
+      // No permissions request is necessary for launching the image library
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+  
+      console.log(result);
+  
+      if (!result.canceled) {
+        // 선택한 이미지의 URI를 photoUri에 저장
+        setPhotoUri(result.assets[0].uri); 
+        setCameraModalupVisible(false);
+      }
+    };
 
     // 이름 모달 열기
     const namemodalup = () => {
@@ -94,12 +132,11 @@ export default function ContentPageOne({navigation}) {
         setCheckModalupVisible(true);
     };
 
-    
     //카메라 모달 열기
     const cameramodal = () => {
       console.log('cameramodal');
       setCameraModalupVisible(true);
-  };
+    };
     // 모달 닫기 및 버튼 텍스트 업데이트
     const closemodal = () => {
         console.log('close modal');
@@ -116,11 +153,23 @@ export default function ContentPageOne({navigation}) {
         setCameraModalupVisible(false);
     };
 
+    //확인 버튼 
+    const Bodycheck = () => {
+      //console.log
+      console.log("name:" + Nametext);
+      console.log("Date:" + Datetext);
+      console.log("Pre:" + Pretext);
+      console.log("Check:" + Checktext);
+        navigation.navigate('MainPage', {
+            photoUri: photoUri,
+            name: Nametext,
+            data: Datetext,
+        });
+    };
     
 
     return (
     <View style={styles.container}>
-
         {/* 이름 모달 */}
         <Modal
         animationType="slide"
@@ -201,9 +250,9 @@ export default function ContentPageOne({navigation}) {
           <View style={styles.CameraModalView}>
             <CameraView style={styles.camera} facing={facing} ref={(ref) => setCameraRef(ref)}></CameraView>
             <View style={styles.CameraModalView_Bottom}>
-              <TouchableOpacity style={styles.Cameramodelbutton}><Text>갤러리</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.Cameramodelbutton} onPress={gallery}><Text>갤러리</Text></TouchableOpacity>
               <TouchableOpacity style={styles.Cameramodelbutton} onPress={toggleCameraFacing}><Text>전환</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.Cameramodelbutton} onPress={takepicture}><Text>확인</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.Cameramodelbutton} onPress={takepicture}><Text>촬영</Text></TouchableOpacity>
               <TouchableOpacity style={styles.Cameramodelbutton} onPress={closemodal}><Text>닫기</Text></TouchableOpacity>
             </View>
           </View>
@@ -213,7 +262,8 @@ export default function ContentPageOne({navigation}) {
       <View style={styles.top_container}>
       <TouchableOpacity style={styles.photo_button} onPress={cameramodal}>
           {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.photoImage} /> // 찍은 사진 표시
+            // 찍은 사진 표시
+            <Image source={{ uri: photoUri }} style={styles.photoImage} /> 
           ) : (
             <Text>photo</Text>
           )}
@@ -239,7 +289,7 @@ export default function ContentPageOne({navigation}) {
         </View>
       </View>
       <View style={styles.footer_container}>
-        <TouchableOpacity style={styles.check_button} onPress={() => { navigation.navigate('MainPage') }}><Text>확인</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.check_button} onPress={Bodycheck}><Text>확인</Text></TouchableOpacity>
       </View>
     </View>
   );
@@ -396,5 +446,9 @@ const styles = StyleSheet.create({
   photoImage: {
     width: '100%',
     height: '100%',
+  },
+  image: {
+    width: 200,
+    height: 200,
   },
 });
