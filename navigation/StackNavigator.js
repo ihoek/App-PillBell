@@ -4,7 +4,7 @@ import MainPage from '../pages/main_page';
 import ContentPageOne from '../pages/content_page_one';
 import ContentPageTwo from '../pages/content_page_two';
 import ContentPageThree from '../pages/content_page_three';
-
+import OneTime from '../pages/one_time_page';
 
 const Stack = createStackNavigator();
 
@@ -25,9 +25,13 @@ const StackNavigator = () =>{
         >
 
             <Stack.Screen name="MainPage" component={MainPage}/>
+            
             <Stack.Screen name="ContentPageOne" component={ContentPageOne}/>
             <Stack.Screen name="ContentPageTwo" component={ContentPageTwo}/>
             <Stack.Screen name="ContentPageThree" component={ContentPageThree}/>
+
+            <Stack.Screen name="OneTime" component={OneTime}/>
+
         </Stack.Navigator>
     )
 }

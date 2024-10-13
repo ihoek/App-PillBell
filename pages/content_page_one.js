@@ -1,9 +1,10 @@
-import { StatusBar } from 'expo-status-bar';
 import React, {useState, useEffect, useContext  } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput, Button, Image} from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { ImageContext } from './ImageContext'; // 이미지 관리 컨텍스트
 import { ProductContext } from './ProductContext'; // 제품 정보 관리 컨텍스트
+import * as ImagePicker from 'expo-image-picker';// 갤러리 사진 선택 
+import RadioButtonGroup, { RadioButtonItem } from "expo-radio-button"; //radio_button
 
 export default function ContentPageOne({navigation}) {
     // 모달 상태 변수
@@ -12,7 +13,7 @@ export default function ContentPageOne({navigation}) {
     const [premodalupVisible, setPreModalupVisible] = useState(false);
     const [checkmodalupVisible,setCheckModalupVisible] = useState(false);
     const [cameramodalupVisible,setCameraModalupVisible] = useState(false);
-
+    
     const [cameraRef, setCameraRef] = useState(null);
 
     // 전역 상태 관리 (ProductContext 사용)
@@ -30,6 +31,9 @@ export default function ContentPageOne({navigation}) {
     const [PrebuttonText, setPreButtonText] = useState(warning || "내용");
     const [CheckbuttonText, setCheckButtonText] = useState(consumed || "내용");
 
+    //radio button
+    const [radioValue, setRadioValue] = useState('No');
+
     //camera
     const [facing, setFacing] = useState(CameraType);
     const [permission, requestPermission] = useCameraPermissions();
@@ -37,6 +41,7 @@ export default function ContentPageOne({navigation}) {
 
     // 사진 저장을 위한 상태 변수
     const { photoUri, setPhotoUri } = useContext(ImageContext);
+    
 
     useEffect(() => {
       setProductInfo({ name: Nametext, expirationDate: Datetext, warning: Pretext, consumed: Checktext });
@@ -82,6 +87,26 @@ export default function ContentPageOne({navigation}) {
 
     }
 
+    //갤러리
+    const gallery = async () => {
+      console.log('갤러리 버튼 실행');
+      // No permissions request is necessary for launching the image library
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+  
+      console.log(result);
+  
+      if (!result.canceled) {
+        // 선택한 이미지의 URI를 photoUri에 저장
+        setPhotoUri(result.assets[0].uri); 
+        setCameraModalupVisible(false);
+      }
+    };
+
     // 이름 모달 열기
     const namemodalup = () => {
         console.log('namemodalup');
@@ -111,20 +136,32 @@ export default function ContentPageOne({navigation}) {
       console.log('cameramodal');
       setCameraModalupVisible(true);
     };
+
     // 모달 닫기 및 버튼 텍스트 업데이트
     const closemodal = () => {
         console.log('close modal');
 
+        // 섭취 여부에 따른 텍스트 설정
+        if (radioValue === 'before') {
+          setCheckButtonText('약을 섭취 하지 않음');
+          onChangeCheckText('약을 섭취 하지 않음');
+        } else if (radioValue === 'after') {
+            setCheckButtonText('약을 섭취 함');
+            onChangeCheckText('약을 섭취 함');
+        }
+        
+        //텍스트 저장
         setNameButtonText(Nametext);
         setDateButtonText(Datetext);
         setPreButtonText(Pretext);
-        setCheckButtonText(Checktext);
+        
 
         setnamemodalupVisible(false);
         setDateModalupVisible(false);
         setPreModalupVisible(false);
         setCheckModalupVisible(false);
         setCameraModalupVisible(false);
+        
     };
 
     //확인 버튼 
@@ -138,6 +175,7 @@ export default function ContentPageOne({navigation}) {
             photoUri: photoUri,
             name: Nametext,
             data: Datetext,
+            check : Checktext
         });
     };
     
@@ -206,7 +244,13 @@ export default function ContentPageOne({navigation}) {
             <View style={styles.centeredView}>
             <View style={styles.modalView}>
                 <Text>섭취여부</Text>
-                <TextInput style={styles.textfieldinput} onChangeText={onChangeCheckText} value={Checktext} placeholder="섭취여부 입력"/>
+                <View style={styles.RadioViewButton}>
+                  <RadioButtonGroup 
+                    selected={radioValue} onSelected={(radioValue) => setRadioValue(radioValue)} radioBackground="black">
+                      <RadioButtonItem value="before" label="섭취 전" />
+                      <RadioButtonItem value="after" label="섭취 후" />
+                    </RadioButtonGroup>
+                </View>
                 <TouchableOpacity style={styles.category_name} onPress={closemodal}><Text>확인</Text></TouchableOpacity>
             </View>
             </View>
@@ -224,9 +268,9 @@ export default function ContentPageOne({navigation}) {
           <View style={styles.CameraModalView}>
             <CameraView style={styles.camera} facing={facing} ref={(ref) => setCameraRef(ref)}></CameraView>
             <View style={styles.CameraModalView_Bottom}>
-              <TouchableOpacity style={styles.Cameramodelbutton}><Text>갤러리</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.Cameramodelbutton} onPress={gallery}><Text>갤러리</Text></TouchableOpacity>
               <TouchableOpacity style={styles.Cameramodelbutton} onPress={toggleCameraFacing}><Text>전환</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.Cameramodelbutton} onPress={takepicture}><Text>확인</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.Cameramodelbutton} onPress={takepicture}><Text>촬영</Text></TouchableOpacity>
               <TouchableOpacity style={styles.Cameramodelbutton} onPress={closemodal}><Text>닫기</Text></TouchableOpacity>
             </View>
           </View>
@@ -263,11 +307,8 @@ export default function ContentPageOne({navigation}) {
         </View>
       </View>
       <View style={styles.footer_container}>
-        <TouchableOpacity style={styles.check_button} onPress={Bodycheck}/*onPress={() => { navigation.navigate('MainPage',{
-          photoUri : photoUri,
-          name : Nametext,
-          data : Datetext
-          }) }}*/><Text>확인</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.check_button} onPress={() => { navigation.navigate('OneTime') }}><Text>알람설정</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.check_button} onPress={Bodycheck}><Text>확인</Text></TouchableOpacity>
       </View>
     </View>
   );
@@ -289,6 +330,7 @@ const styles = StyleSheet.create({
   },
   footer_container : {
     flex:0.2,
+    flexDirection:"row",
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -337,7 +379,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor : "white",
-    width : 200,
+    width : 180,
     height : 50,
     borderColor:'#000',
     borderWidth:1,
@@ -406,9 +448,6 @@ const styles = StyleSheet.create({
     borderRadius:10,
     margin:10,
   },
-  Camerascrenn : {
-    
-  },
   camera: {
     flex: 4,
     alignItems: 'center',
@@ -425,4 +464,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  RadioViewButton : {
+    margin : 10
+  },
+  
 });

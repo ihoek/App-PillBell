@@ -1,6 +1,4 @@
 import React from 'react'
-//import MainPage from './pages/main_page';
-//import ContentPage from './pages/content_page'
 import { StatusBar } from 'expo-status-bar'
 
 import { NavigationContainer } from '@react-navigation/native'
@@ -23,6 +21,3 @@ export default function App() {
     </ImageProvider>
   );
 }
-
-//return (<MainPage/>)
-//return (<ContentPage/>)
